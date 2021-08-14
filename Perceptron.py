@@ -11,12 +11,12 @@ from sklearn.metrics import auc
 
 def get_data():
     transform = torchvision.transforms.Compose([torchvision.transforms.ToTensor()])
-    train_root = "/home/dsi/zuckerm1/imaging/train/"
+    train_root = "/content/drive/MyDrive/xray_knee_oa/train"
     train_data = torchvision.datasets.ImageFolder(root=train_root, transform=transform)
-    
-    test_root = "/home/dsi/zuckerm1/imaging/test"
+
+    test_root = "/content/drive/MyDrive/xray_knee_oa/test"
     test_data = torchvision.datasets.ImageFolder(root=test_root, transform=transform)
-    
+
     return train_data, test_data
 
 def perceptron():
@@ -40,8 +40,8 @@ def perceptron():
 
 
 if __name__ == '__main__':
-    train, test = get_data()
-    for epoch in range(16):
+        train, test = get_data()
+        epoch = 10
         r = perceptron()
         correct = 0
         wrong = 0
@@ -51,16 +51,12 @@ if __name__ == '__main__':
             else:
                 wrong = wrong + 1
         print(f"epoch {epoch}: {correct / (correct + wrong)}")
-        if epoch == 15:
-            y_true = []
-            y_pred = []
-            for el in r:
-                y_pred.append(el[0])
-                y_ture.append(el[1])
-            cm = confusion_matrix(y_true, y_pred, labels = [0, 1, 2, 3])
-
-            cm_display = ConfusionMatrixDisplay(cm, display_labels = [0, 1, 2, 3]).plot()
-
-            fpr, tpr, _ = roc_curve(y_true, y_pred)
-            roc_auc = auc(fpr, tpr)
-            roc_display = RocCurveDisplay(fpr=fpr, tpr=tpr, roc_auc=roc_auc, estimator_name='perceptron').plot()
+        
+        y_true = []
+        y_pred = []
+        for el in r:
+            y_pred.append(el[0])
+            y_true.append(el[1])
+        
+        cm = confusion_matrix(y_true, y_pred, labels = [0, 1, 2, 3])
+        cm_display = ConfusionMatrixDisplay(cm, display_labels = [0, 1, 2, 3]).plot()
