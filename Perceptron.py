@@ -3,7 +3,11 @@ import torch
 import torchvision
 from torchvision.datasets import ImageFolder
 from torchvision.transforms import Compose, Resize, ToTensor
-
+from sklearn.metrics import confusion_matrix
+from sklearn.metrics import ConfusionMatrixDisplay
+from sklearn.metrics import roc_curve
+from sklearn.metrics import RocCurveDisplay
+from sklearn.metrics import auc
 
 def get_data():
     transform = torchvision.transforms.Compose([torchvision.transforms.ToTensor()])
