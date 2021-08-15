@@ -12,29 +12,29 @@ import torch.nn.functional as F
 import tensorflow as tf
 from PIL import Image
 from sklearn.metrics import confusion_matrix
-from matplotlib import pyplot as plt
-from sklearn.metrics import confusion_matrix
 from sklearn.metrics import ConfusionMatrixDisplay
 from sklearn.metrics import roc_curve
 from sklearn.metrics import RocCurveDisplay
 from sklearn.metrics import auc
 
+# load data function
 def get_dataloader():
     transform = torchvision.transforms.Compose([torchvision.transforms.ToTensor()])
     BATCH_SIZE = 16
     
-    train_root = "/home/dsi/zuckerm1/imaging/binary_01/train/"
+    train_root = "./01_binary/train/"
     train_data = torchvision.datasets.ImageFolder(root=train_root, transform=transform)
     trainloader = DataLoader(train_data, batch_size=BATCH_SIZE, shuffle=True)
     # train_data[i][0] # tensor image
-    # train_data[i][1] # class 0,1,2,3
+    # train_data[i][1] # class 0,1
 
-    test_root = "/home/dsi/zuckerm1/imaging/binary_01/test"
+    test_root = "./01_binary/test"
     test_data = torchvision.datasets.ImageFolder(root=test_root, transform=transform)
     testloader = DataLoader(test_data, batch_size=BATCH_SIZE, shuffle=True)
 
     return trainloader, testloader
 
+# Alexnet
 class CNN(nn.Module):
     def __init__(self, in_channels=3, num_classes=2):
         super(CNN, self).__init__()
@@ -89,6 +89,7 @@ class CNN(nn.Module):
 # Set device
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
+# train function
 def train(model, optimizer, critirion, train_loader, epoch, epochs):
     model.train()
     correct = 0
@@ -112,6 +113,7 @@ def train(model, optimizer, critirion, train_loader, epoch, epochs):
                                                                                   len(train_loader.dataset), 100. * correct / len(train_loader.dataset)))
     return train_loss, accuracy
 
+# validation / test function
 def validation(valid_loader, model, critirion, test):
     model.eval()
     valid_loss = 0
@@ -128,6 +130,7 @@ def validation(valid_loader, model, critirion, test):
             pred = output.max(1, keepdim=True)[1]
             correct += pred.eq(target.view_as(pred)).cpu().sum()
             
+            # for confusion matrix
             if (test):
               target_ = target.view_as(pred).tolist()
               target_ = [k for sub in target_ for k in sub]
@@ -147,6 +150,7 @@ def validation(valid_loader, model, critirion, test):
       
     return valid_loss, accuracy, y_true, y_pred
 
+# plot loss and accuracy
 def plotdata(loss_train, loss_test, accuracy_train, accuracy_test):
     plt.figure()
     plt.subplot(211)
@@ -162,7 +166,7 @@ def plotdata(loss_train, loss_test, accuracy_train, accuracy_test):
 # load data
 train_loader, test_loader = get_dataloader()
 
-# Initialize network
+# initialize network
 model = CNN().to(device)
 
 # Hyperparameters
@@ -178,6 +182,7 @@ critirion = nn.CrossEntropyLoss()
 optimizer = optim.SGD(model.parameters(), lr=learning_rate)
 # optimizer = optim.Adam(model.fc.parameters(), lr=0.003)
 
+# run train and validation for each epoch
 loss_train = []
 loss_test = []
 accuracy_train = []
@@ -189,6 +194,7 @@ for epoch in range(num_epochs-1):
         valid_loss, accuracy, _, _ = validation(test_loader, model, critirion, False)
         loss_test.append(valid_loss)
         accuracy_test.append(accuracy)
+# run train and test for last epoch
 loss_accuracy_train = (train(model, optimizer, critirion, train_loader, num_epochs-1, num_epochs))
 loss_train.append(loss_accuracy_train[0])
 accuracy_train.append(loss_accuracy_train[1])
@@ -196,12 +202,14 @@ valid_loss, accuracy, y_true, y_pred = validation(test_loader, model, critirion,
 loss_test.append(valid_loss)
 accuracy_test.append(accuracy)
 
+# create plots
 plotdata(loss_train, loss_test, accuracy_train, accuracy_test)
 
+# create confusion matrix
 cm = confusion_matrix(y_true, y_pred, labels = [0, 1])
-
 cm_display = ConfusionMatrixDisplay(cm, display_labels = [0, 1]).plot()
 
+# create roc plot
 fpr, tpr, _ = roc_curve(y_true, y_pred)
 roc_auc = auc(fpr, tpr)
 roc_display = RocCurveDisplay(fpr=fpr, tpr=tpr, roc_auc=roc_auc, estimator_name='binary 1 2').plot()
