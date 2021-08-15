@@ -11,10 +11,10 @@ from sklearn.metrics import auc
 
 def get_data():
     transform = torchvision.transforms.Compose([torchvision.transforms.ToTensor()])
-    train_root = "/content/drive/MyDrive/xray_knee_oa/train"
+    train_root = "./train"
     train_data = torchvision.datasets.ImageFolder(root=train_root, transform=transform)
 
-    test_root = "/content/drive/MyDrive/xray_knee_oa/test"
+    test_root = "./test"
     test_data = torchvision.datasets.ImageFolder(root=test_root, transform=transform)
 
     return train_data, test_data
