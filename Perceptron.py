@@ -9,18 +9,21 @@ from sklearn.metrics import roc_curve
 from sklearn.metrics import RocCurveDisplay
 from sklearn.metrics import auc
 
+# load data function
 def get_data():
     transform = torchvision.transforms.Compose([torchvision.transforms.ToTensor()])
-    train_root = "/content/drive/MyDrive/xray_knee_oa/train"
+    train_root = "./train"
     train_data = torchvision.datasets.ImageFolder(root=train_root, transform=transform)
 
-    test_root = "/content/drive/MyDrive/xray_knee_oa/test"
+    test_root = "./test"
     test_data = torchvision.datasets.ImageFolder(root=test_root, transform=transform)
 
     return train_data, test_data
 
+# perceptron
 def perceptron():
     w = torch.from_numpy(np.random.uniform(-0.05, 0.05, [4, 224*224*3]))
+    # train
     for e in range(epoch):
         for x,y in train:
             x = x.reshape(-1)
@@ -30,6 +33,7 @@ def perceptron():
                 w[y_hat] = w[y_hat] - x
                 w[y] = w[y] + x
 
+    # test
     results = []
     for x,y in test:
         x = x.reshape(-1)
@@ -43,6 +47,7 @@ if __name__ == '__main__':
         train, test = get_data()
         epoch = 10
         r = perceptron()
+        # calc accuracy
         correct = 0
         wrong = 0
         for i in r:
@@ -52,6 +57,7 @@ if __name__ == '__main__':
                 wrong = wrong + 1
         print(f"epoch {epoch}: {correct / (correct + wrong)}")
         
+        # confusion matrix
         y_true = []
         y_pred = []
         for el in r:
